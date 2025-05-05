@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathGames - Juegos Matemáticos Interactivos</title>
+    <style>
+        :root {
+            --primary: #4263eb;
+            --secondary: #3b5bdb;
+            --accent: #5c7cfa;
+            --light: #edf2ff;
+            --dark: #1e2a3a;
+            --success: #37b24d;
+            --error: #e03131;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light);
+            color: var(--dark);
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        nav {
+            background-color: var(--secondary);
+            display: flex;
+            justify-content: center;
+            padding: 0.5rem;
+        }
+
+        nav button {
+            background-color: transparent;
+            border: none;
+            color: white;
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        nav button:hover {
+            background-color: var(--accent);
+        }
+
+        nav button.active {
+            background-color: var(--accent);
+        }
+
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 1rem;
+        }
+
+        .game-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .game-container.active {
+            display: block;
+        }
+
+        h1, h2 {
+            color: var(--primary);
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.2s;
+        }
+
+        button:hover {
+            background-color: var(--secondary);
+        }
+
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        input, select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .result-display {
+            font-size: 1.2rem;
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 4px;
+            background-color: var(--light);
+        }
+
+        .success {
+            color: var(--success);
+        }
+
+        .error {
+            color: var(--error);
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 1rem;
+        }
+
+        .memory-card {
+            height: 80px;
+            background-color: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .memory-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .memory-card.flipped {
+            background-color: var(--light);
+            color: var(--dark);
+            transform: rotateY(180deg);
+        }
+
+        .memory-card.matched {
+            background-color: var(--success);
+            cursor: default;
+        }
+
+        #timer, #score {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: var(--primary);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        #equation-display {
+            font-size: 2rem;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .option-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin: 1rem 0;
+        }
+
+        .option-button {
+            min-width: 80px;
+            font-size: 1.2rem;
+        }
+
+        @media (max-width: 600px) {
+            .game-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            nav {
+                flex-wrap: wrap;
+            }
+            
+            nav button {
+                margin-bottom: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>MathGames</h1>
+        <p>Juegos matemáticos divertidos para aprender y practicar</p>
+    </header>
+
+    <nav>
+        <button id="btn-calculator" class="active">Calculadora</button>
+        <button id="btn-memory">Memoria Matemática</button>
+        <button id="btn-speedmath">Matemáticas Rápidas</button>
+        <button id="btn-puzzle">Puzzle Numérico</button>
+    </nav>
+
+    <main>
+        <!-- Calculadora -->
+        <div id="calculator" class="game-container active">
+            <h2>Calculadora</h2>
+            <p>Practica operaciones matemáticas básicas</p>
+            
+            <div class="input-group">
+                <label for="num1">Primer número:</label>
+                <input type="number" id="num1" placeholder="Ingresa un número">
+            </div>
+            
+            <div class="input-group">
+                <label for="operation">Operación:</label>
+                <select id="operation">
+                    <option value="add">Suma (+)</option>
+                    <option value="subtract">Resta (-)</option>
+                    <option value="multiply">Multiplicación (×)</option>
+                    <option value="divide">División (÷)</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="num2">Segundo número:</label>
+                <input type="number" id="num2" placeholder="Ingresa un número">
+            </div>
+            
+            <button id="calculate">Calcular</button>
+            
+            <div id="calculation-result" class="result-display">
+                Resultado aparecerá aquí
+            </div>
+        </div>
+
+        <!-- Memoria Matemática -->
+        <div id="memory" class="game-container">
+            <h2>Memoria Matemática</h2>
+            <p>Encuentra las parejas de operaciones matemáticas y sus resultados</p>
+            
+            <div>
+                <button id="start-memory">Iniciar Juego</button>
+                <div id="timer">Tiempo: 0s</div>
+                <div id="memory-score">Puntuación: 0</div>
+            </div>
+            
+            <div class="game-grid" id="memory-grid">
+                <!-- Las tarjetas se generarán dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Matemáticas Rápidas -->
+        <div id="speedmath" class="game-container">
+            <h2>Matemáticas Rápidas</h2>
+            <p>Resuelve operaciones matemáticas contra el tiempo</p>
+            
+            <div class="progress-container">
+                <div id="time-bar" class="progress-bar"></div>
+            </div>
+            
+            <div id="speedmath-score">Puntuación: 0</div>
+            
+            <div id="equation-display">
+                Presiona "Comenzar" para iniciar
+            </div>
+            
+            <div class="input-group">
+                <input type="number" id="answer-input" placeholder="Tu respuesta">
+                <button id="check-answer">Comprobar</button>
+            </div>
+            
+            <button id="start-speedmath">Comenzar</button>
+        </div>
+
+        <!-- Puzzle Numérico -->
+        <div id="puzzle" class="game-container">
+            <h2>Puzzle Numérico</h2>
+            <p>Selecciona la respuesta correcta a la operación mostrada</p>
+            
+            <div class="progress-container">
+                <div id="puzzle-progress" class="progress-bar"></div>
+            </div>
+            
+            <div id="puzzle-score">Puntuación: 0</div>
+            
+            <div id="puzzle-equation">
+                Presiona "Comenzar" para iniciar
+            </div>
+            
+            <div class="option-buttons" id="options-container">
+                <!-- Las opciones se generarán dinámicamente -->
+            </div>
+            
+            <button id="start-puzzle">Comenzar</button>
+        </div>
+    </main>
+
+    <script>
+        // Navegación entre juegos
+        const navButtons = document.querySelectorAll('nav button');
+        const gameContainers = document.querySelectorAll('.game-container');
+        
+        navButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // Desactivar todos los botones y contenedores
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                gameContainers.forEach(container => container.classList.remove('active'));
+                
+                // Activar el botón clickeado
+                button.classList.add('active');
+                
+                // Activar el contenedor correspondiente
+                const gameId = button.id.substring(4); // Quitar "btn-" del id
+                document.getElementById(gameId).classList.add('active');
+            });
+        });
+        
+        // Calculadora
+        const calculateBtn = document.getElementById('calculate');
+        const resultDisplay = document.getElementById('calculation-result');
+        
+        calculateBtn.addEventListener('click', () => {
+            const num1 = parseFloat(document.getElementById('num1').value);
+            const num2 = parseFloat(document.getElementById('num2').value);
+            const operation = document.getElementById('operation').value;
+            
+            if (isNaN(num1) || isNaN(num2)) {
+                resultDisplay.textContent = 'Por favor ingresa números válidos';
+                resultDisplay.className = 'result-display error';
+                return;
+            }
+            
+            let result;
+            switch (operation) {
+                case 'add':
+                    result = num1 + num2;
+                    resultDisplay.textContent = `${num1} + ${num2} = ${result}`;
+                    break;
+                case 'subtract':
+                    result = num1 - num2;
+                    resultDisplay.textContent = `${num1} - ${num2} = ${result}`;
+                    break;
+                case 'multiply':
+                    result = num1 * num2;
+                    resultDisplay.textContent = `${num1} × ${num2} = ${result}`;
+                    break;
+                case 'divide':
+                    if (num2 === 0) {
+                        resultDisplay.textContent = 'No se puede dividir por cero';
+                        resultDisplay.className = 'result-display error';
+                        return;
+                    }
+                    result = num1 / num2;
+                    resultDisplay.textContent = `${num1} ÷ ${num2} = ${result}`;
+                    break;
+            }
+            
+            resultDisplay.className = 'result-display success';
+        });
+        
+        // Juego de Memoria Matemática
+        const memoryGrid = document.getElementById('memory-grid');
+        const startMemoryBtn = document.getElementById('start-memory');
+        const timerDisplay = document.getElementById('timer');
+        const memoryScoreDisplay = document.getElementById('memory-score');
+        
+        let memoryCards = [];
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let memoryScore = 0;
+        let gameTimer;
+        let seconds = 0;
+        
+        function createMemoryGame() {
+            // Reiniciar variables
+            memoryGrid.innerHTML = '';
+            flippedCards = [];
+            matchedPairs = 0;
+            memoryScore = 0;
+            seconds = 0;
+            
+            // Crear pares de operaciones y resultados
+            const pairs = [
+                { question: '2 + 3', answer: '5' },
+                { question: '4 × 2', answer: '8' },
+                { question: '10 - 7', answer: '3' },
+                { question: '12 ÷ 4', answer: '3' },
+                { question: '5 × 5', answer: '25' },
+                { question: '9 + 8', answer: '17' },
+                { question: '20 - 15', answer: '5' },
+                { question: '6 × 3', answer: '18' }
+            ];
+            
+            // Crear array con todas las cartas (preguntas y respuestas)
+            memoryCards = [];
+            pairs.forEach(pair => {
+                memoryCards.push({
+                    content: pair.question,
+                    type: 'question',
+                    matchId: pair.question
+                });
+                memoryCards.push({
+                    content: pair.answer,
+                    type: 'answer',
+                    matchId: pair.question
+                });
+            });
+            
+            // Mezclar las cartas
+            memoryCards.sort(() => Math.random() - 0.5);
+            
+            // Crear el grid de cartas
+            memoryCards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'memory-card';
+                cardElement.dataset.index = index;
+                cardElement.textContent = '?';
+                
+                cardElement.addEventListener('click', () => flipCard(index));
+                
+                memoryGrid.appendChild(cardElement);
+            });
+            
+            // Actualizar la puntuación
+            memoryScoreDisplay.textContent = `Puntuación: ${memoryScore}`;
+            
+            // Iniciar el temporizador
+            clearInterval(gameTimer);
+            gameTimer = setInterval(() => {
+                seconds++;
+                timerDisplay.textContent = `Tiempo: ${seconds}s`;
+            }, 1000);
+        }
+        
+        function flipCard(index) {
+            // Ignorar si la carta ya está volteada o emparejada
+            if (flippedCards.includes(index) || memoryGrid.children[index].classList.contains('matched')) {
+                return;
+            }
+            
+            // Limitar a solo dos cartas volteadas
+            if (flippedCards.length === 2) {
+                return;
+            }
+            
+            // Voltear la carta
+            const cardElement = memoryGrid.children[index];
+            cardElement.textContent = memoryCards[index].content;
+            cardElement.classList.add('flipped');
+            flippedCards.push(index);
+            
+            // Comprobar si hay un par
+            if (flippedCards.length === 2) {
+                const card1 = memoryCards[flippedCards[0]];
+                const card2 = memoryCards[flippedCards[1]];
+                
+                // Comprobar si son un par (una pregunta y su respuesta)
+                if (card1.matchId === card2.matchId && card1.type !== card2.type) {
+                    // Es un par
+                    setTimeout(() => {
+                        memoryGrid.children[flippedCards[0]].classList.add('matched');
+                        memoryGrid.children[flippedCards[1]].classList.add('matched');
+                        flippedCards = [];
+                        matchedPairs++;
+                        memoryScore += 10;
+                        memoryScoreDisplay.textContent = `Puntuación: ${memoryScore}`;
+                        
+                        // Comprobar si el juego ha terminado
+                        if (matchedPairs === memoryCards.length / 2) {
+                            clearInterval(gameTimer);
+                            setTimeout(() => {
+                                alert(`¡Juego terminado! Tu puntuación es ${memoryScore} y lo completaste en ${seconds} segundos.`);
+                            }, 500);
+                        }
+                    }, 500);
+                } else {
+                    // No es un par
+                    setTimeout(() => {
+                        memoryGrid.children[flippedCards[0]].textContent = '?';
+                        memoryGrid.children[flippedCards[1]].textContent = '?';
+                        memoryGrid.children[flippedCards[0]].classList.remove('flipped');
+                        memoryGrid.children[flippedCards[1]].classList.remove('flipped');
+                        flippedCards = [];
+                        memoryScore = Math.max(0, memoryScore - 2);
+                        memoryScoreDisplay.textContent = `Puntuación: ${memoryScore}`;
+                    }, 1000);
+                }
+            }
+        }
+        
+        startMemoryBtn.addEventListener('click', createMemoryGame);
+        
+        // Juego de Matemáticas Rápidas
+        const startSpeedMathBtn = document.getElementById('start-speedmath');
+        const equationDisplay = document.getElementById('equation-display');
+        const answerInput = document.getElementById('answer-input');
+        const checkAnswerBtn = document.getElementById('check-answer');
+        const speedMathScoreDisplay = document.getElementById('speedmath-score');
+        const timeBar = document.getElementById('time-bar');
+        
+        let speedMathScore = 0;
+        let currentAnswer = 0;
+        let timeLeft = 0;
+        let timeInterval;
+        
+        function generateEquation() {
+            // Generar números aleatorios
+            const num1 = Math.floor(Math.random() * 12) + 1;
+            const num2 = Math.floor(Math.random() * 12) + 1;
+            
+            // Seleccionar operación aleatoria
+            const operations = ['+', '-', '×'];
+            const operation = operations[Math.floor(Math.random() * operations.length)];
+            
+            // Calcular la respuesta
+            let answer;
+            switch (operation) {
+                case '+':
+                    answer = num1 + num2;
+                    break;
+                case '-':
+                    // Asegurar que el resultado no sea negativo
+                    if (num1 < num2) {
+                        return generateEquation();
+                    }
+                    answer = num1 - num2;
+                    break;
+                case '×':
+                    answer = num1 * num2;
+                    break;
+            }
+            
+            currentAnswer = answer;
+            equationDisplay.textContent = `${num1} ${operation} ${num2} = ?`;
+            
+            // Reiniciar el tiempo
+            timeLeft = 10;
+            updateTimeBar();
+        }
+        
+        function updateTimeBar() {
+            timeBar.style.width = `${(timeLeft / 10) * 100}%`;
+        }
+        
+        function checkAnswer() {
+            const userAnswer = parseInt(answerInput.value);
+            
+            if (userAnswer === currentAnswer) {
+                // Respuesta correcta
+                speedMathScore += Math.max(1, Math.floor(timeLeft));
+                speedMathScoreDisplay.textContent = `Puntuación: ${speedMathScore}`;
+                answerInput.value = '';
+                generateEquation();
+            } else {
+                // Respuesta incorrecta
+                answerInput.classList.add('error');
+                setTimeout(() => {
+                    answerInput.classList.remove('error');
+                }, 500);
+            }
+        }
+        
+        startSpeedMathBtn.addEventListener('click', () => {
+            // Reiniciar el juego
+            speedMathScore = 0;
+            speedMathScoreDisplay.textContent = `Puntuación: ${speedMathScore}`;
+            answerInput.value = '';
+            
+            // Generar primera ecuación
+            generateEquation();
+            
+            // Iniciar el temporizador
+            clearInterval(timeInterval);
+            timeInterval = setInterval(() => {
+                timeLeft -= 0.1;
+                updateTimeBar();
+                
+                if (timeLeft <= 0) {
+                    // Se acabó el tiempo
+                    clearInterval(timeInterval);
+                    equationDisplay.textContent = 'Tiempo agotado!';
+                    setTimeout(() => {
+                        alert(`Juego terminado. Tu puntuación final es ${speedMathScore}`);
+                        equationDisplay.textContent = 'Presiona "Comenzar" para iniciar';
+                    }, 1000);
+                }
+            }, 100);
+        });
+        
+        checkAnswerBtn.addEventListener('click', checkAnswer);
+        
+        answerInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkAnswer();
+            }
+        });
+        
+        // Puzzle Numérico
+        const startPuzzleBtn = document.getElementById('start-puzzle');
+        const puzzleEquation = document.getElementById('puzzle-equation');
+        const optionsContainer = document.getElementById('options-container');
+        const puzzleScoreDisplay = document.getElementById('puzzle-score');
+        const puzzleProgress = document.getElementById('puzzle-progress');
+        
+        let puzzleScore = 0;
+        let currentPuzzleAnswer = 0;
+        let puzzleRound = 0;
+        const totalRounds = 10;
+        
+        function generatePuzzle() {
+            // Limpiar opciones anteriores
+            optionsContainer.innerHTML = '';
+            
+            // Generar ecuación aleatoria
+            const num1 = Math.floor(Math.random() * 15) + 1;
+            const num2 = Math.floor(Math.random() * 10) + 1;
+            
+            // Seleccionar operación aleatoria
+            const operations = ['+', '-', '×'];
+            const operation = operations[Math.floor(Math.random() * operations.length)];
+            
+            // Calcular la respuesta correcta
+            let correctAnswer;
+            switch (operation) {
+                case '+':
+                    correctAnswer = num1 + num2;
+                    break;
+                case '-':
+                    // Asegurar que el resultado no sea negativo
+                    if (num1 < num2) {
+                        return generatePuzzle();
+                    }
+                    correctAnswer = num1 - num2;
+                    break;
+                case '×':
+                    correctAnswer = num1 * num2;
+                    break;
+            }
+            
+            currentPuzzleAnswer = correctAnswer;
+            puzzleEquation.textContent = `${num1} ${operation} ${num2} = ?`;
+            
+            // Generar opciones (una correcta y tres incorrectas)
+            const options = [correctAnswer];
+            
+            // Generar 3 opciones incorrectas únicas
+            while (options.length < 4) {
+                // Generar un número aleatorio cercano a la respuesta correcta
+                let wrongAnswer = correctAnswer + Math.floor(Math.random() * 10) - 5;
+                
+                // Asegurar que sea un número positivo y no sea igual a la respuesta correcta
+                if (wrongAnswer > 0 && wrongAnswer !== correctAnswer && !options.includes(wrongAnswer)) {
+                    options.push(wrongAnswer);
+                }
+            }
+            
+            // Mezclar las opciones
+            options.sort(() => Math.random() - 0.5);
+            
+            // Crear botones para las opciones
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.textContent = option;
+                
+                button.addEventListener('click', () => {
+                    if (parseInt(button.textContent) === currentPuzzleAnswer) {
+                        // Respuesta correcta
+                        puzzleScore += 10;
+                        puzzleScoreDisplay.textContent = `Puntuación: ${puzzleScore}`;
+                        button.classList.add('success');
+                        
+                        setTimeout(() => {
+                            nextPuzzleRound();
+                        }, 800);
+                    } else {
+                        // Respuesta incorrecta
+                        button.classList.add('error');
+                        
+                        // Mostrar la respuesta correcta
+                        options.forEach((opt, i) => {
+                            if (opt === currentPuzzleAnswer) {
+                                optionsContainer.children[i].classList.add('success');
+                            }
+                        });
+                        
+                        setTimeout(() => {
+                            nextPuzzleRound();
+                        }, 1500);
+                    }
+                });
+                
+                optionsContainer.appendChild(button);
+            });
+        }
+        
+        function nextPuzzleRound() {
+            puzzleRound++;
+            
+            // Actualizar barra de progreso
+            puzzleProgress.style.width = `${(puzzleRound / totalRounds) * 100}%`;
+            
+            if (puzzleRound < totalRounds) {
+                generatePuzzle();
+            } else {
+                // Fin del juego
+                puzzleEquation.textContent = '¡Juego terminado!';
+                optionsContainer.innerHTML = '';
+                
+                setTimeout(() => {
+                    alert(`Juego terminado. Tu puntuación final es ${puzzleScore} de ${totalRounds * 10} posibles.`);
+                    puzzleEquation.textContent = 'Presiona "Comenzar" para iniciar';
+                }, 500);
+            }
+        }
+        
+        startPuzzleBtn.addEventListener('click', () => {
+            // Reiniciar el juego
+            puzzleScore = 0;
+            puzzleRound = 0;
+            puzzleScoreDisplay.textContent = `Puntuación: ${puzzleScore}`;
+            puzzleProgress.style.width = '0%';
+            
+            // Generar primer puzzle
+            generatePuzzle();
+        });
+    </script>
+</body>
+</html>
